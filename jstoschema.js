@@ -10,7 +10,7 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
   if(title){
     finalSchema.title = title;
   }
-  if (typeof obj === 'object' && !Array.isArray(obj) && !isNumeric(obj)) {
+  if (typeof obj === 'object' && !Array.isArray(obj) && !isNumeric(obj) && obj !== null) {
     keys = Object.keys(obj);
     finalSchema = {
       type: "object",
@@ -37,6 +37,11 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
       finalSchema = {
         type: "float"
       }
+    }
+  }
+  else if(obj === null){
+    finalSchema = {
+      type: "string"
     }
   }
   else {
