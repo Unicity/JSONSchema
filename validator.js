@@ -1,7 +1,7 @@
 //Given a schema this validates whether or not it is valid
 var fs = require("fs");
 
-function validateSchema(schema){
+function validateSchema(ast){
     var validKeywords = [
     "properties",
     "type",
@@ -18,28 +18,35 @@ function validateSchema(schema){
     "integer",
     "number"
   ];
-
   var errors = [];
-  var keys = Object.keys(schema);
-  keys.forEach(function(key){
-    if(validKeywords.indexOf(key) === -1){
-      errors.push("keyword: `"+key+"` is not valid");
-    }
-  });
-
-  if(validTypes.indexOf(schema.type) > -1){
-    if(schema.type === "object"){
-      var propertyKeys = Object.keys(schema.properties);
-      propertyKeys.forEach(function(key){
-        errors = errors.concat(validateSchema(schema.properties[key]));
-      });
-    }
+  var keys = Object.keys(ast);
+  console.log(keys);
+  if(ast.key === "root"){
+    ast.children.forEach(function(child){
+      if(validKeywords.indexOf(child.key) > -1){
+        console.log(child.key);
+      }
+    });
   }
-  else{
-    errors.push("Schema contains non-valid type ( "+schema.type+" )");
+  // keys.forEach(function(key){
+  //   if(validKeywords.indexOf(key) === -1){
+  //     errors.push("keyword: `"+key+"` is not valid");
+  //   }
+  // });
 
-  }
-  return errors;
+  // if(validTypes.indexOf(schema.type) > -1){
+  //   if(schema.type === "object"){
+  //     var propertyKeys = Object.keys(schema.properties);
+  //     propertyKeys.forEach(function(key){
+  //       errors = errors.concat(validateSchema(schema.properties[key]));
+  //     });
+  //   }
+  // }
+  // else{
+  //   errors.push("Schema contains non-valid type ( "+schema.type+" )");
+
+  // }
+  // return errors;
 }
 
 tokens = {
@@ -182,7 +189,6 @@ function ASTFromText (tokenizer, key) {
         requireToken(tokenizer, tokens.colon);
         childNode = ASTFromText(tokenizer, childKey.text);
         node.children.push(childNode);
-        //requireToken(tokenizer, tokens.comma);
         token = getToken(tokenizer);
       }
     }break;
@@ -211,8 +217,29 @@ function ASTFromText (tokenizer, key) {
       node = createNode(key, "unknown", "I DONT KNOW", tokenizer.lineNumber)
     }break;
   }
+
   return node;
+
   console.log(lineNumber);
+}
+
+function ASTToJSONWithLineNumbers (ast){
+  var Result = {};
+  if (ast.type === "object") {
+    ast.children.forEach(function(child){
+      Result[child.key+"#"+child.line] = ASTToJSONWithLineNumbers(child);
+    });
+  }
+  else if (ast.type === "array"){
+    Result = [];
+    ast.children.forEach(function(child){
+      Result[child.key] = ASTToJSONWithLineNumbers(child);
+    })
+  } 
+  else{
+    Result = ast.value;
+  }
+  return Result;
 }
 
 function main () {
@@ -223,8 +250,10 @@ function main () {
     lineNumber: 1,
   }
   var ast = ASTFromText(tokenizer, "root");
-  console.log(JSON.stringify(ast, null, 2));
-  //console.log(validateSchema(schema));
+  var schema = ASTToJSONWithLineNumbers(ast);
+  console.log(JSON.stringify(schema, null, 2));
+  //validateSchema(ast);
+  //console.log(JSON.stringify(ast, null, 2));
 }
 
 main();
