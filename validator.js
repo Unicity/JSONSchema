@@ -1,7 +1,7 @@
 //Given a schema this validates whether or not it is valid
 var fs = require("fs");
 
-function validateSchema(ast){
+function validateSchema(schema, parent){
     var validKeywords = [
     "properties",
     "type",
@@ -16,37 +16,66 @@ function validateSchema(ast){
     "array",
     "object",
     "integer",
-    "number"
+    "number",
+    "boolean"
   ];
   var errors = [];
-  var keys = Object.keys(ast);
-  console.log(keys);
-  if(ast.key === "root"){
-    ast.children.forEach(function(child){
-      if(validKeywords.indexOf(child.key) > -1){
-        console.log(child.key);
+  var keys = Object.keys(schema);
+
+  var TypeLine;
+  var type;
+  var properties;
+  var items;
+  var line;
+
+  keys.forEach(function(key){
+    line = key.substring(key.lastIndexOf("#"));
+    var keyNoLine = key.substring(0, key.lastIndexOf("#"));
+    if(validKeywords.indexOf(keyNoLine) === -1){
+      
+
+      errors.push("keyword: `"+keyNoLine+"` is not valid. On line: "+line);
+    }
+    else{
+      if(keyNoLine === "type"){
+        TypeLine = line;
+        type = schema[key];
       }
-    });
+
+      if(keyNoLine === "properties"){
+        properties = schema[key];
+      }
+
+      if(keyNoLine === "items"){
+        items = schema[key];
+      }
+    }
+  });
+
+  if(validTypes.indexOf(type) > -1){
+    if(type === "object"){
+      var propertyKeys = Object.keys(properties);
+      propertyKeys.forEach(function(key){
+        var keyNoLine = key.substring(0, key.lastIndexOf("#"));
+        errors = errors.concat(validateSchema(properties[key], parent+"."+keyNoLine));
+      });
+    }
+
+    else if(type === "array"){
+      var itemKeys = Object.keys(items);
+      itemKeys.forEach(function(key){
+        var keyNoLine = key.substring(0, key.lastIndexOf("#"));
+        errors = errors.concat(validateSchema(items[key], parent+"."+keyNoLine));
+      });
+    }
   }
-  // keys.forEach(function(key){
-  //   if(validKeywords.indexOf(key) === -1){
-  //     errors.push("keyword: `"+key+"` is not valid");
-  //   }
-  // });
+  else if(type){
+    errors.push("Schema contains non-valid type ( "+type+" ). On line: "+TypeLine );
 
-  // if(validTypes.indexOf(schema.type) > -1){
-  //   if(schema.type === "object"){
-  //     var propertyKeys = Object.keys(schema.properties);
-  //     propertyKeys.forEach(function(key){
-  //       errors = errors.concat(validateSchema(schema.properties[key]));
-  //     });
-  //   }
-  // }
-  // else{
-  //   errors.push("Schema contains non-valid type ( "+schema.type+" )");
-
-  // }
-  // return errors;
+  }else{
+    errors.push(parent+" is missing type parameter around line: "+ line);
+  }
+  return errors;
 }
 
 tokens = {
@@ -251,8 +280,8 @@ function main () {
   }
   var ast = ASTFromText(tokenizer, "root");
   var schema = ASTToJSONWithLineNumbers(ast);
-  console.log(JSON.stringify(schema, null, 2));
-  //validateSchema(ast);
+  //console.log(JSON.stringify(schema, null, 2));
+  console.log(validateSchema(schema, "root"));
   //console.log(JSON.stringify(ast, null, 2));
 }
 
