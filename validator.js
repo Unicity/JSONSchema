@@ -289,7 +289,15 @@ function main () {
   var ast = ASTFromText(tokenizer, "root");
   var schema = ASTToJSONWithLineNumbers(ast);
   //console.log(JSON.stringify(schema, null, 2));
-  console.log(validateSchema(schema, "root"));
+  var errors = validateSchema(schema, "root");
+  errors.forEach(function(error){
+    console.log(error);
+  });
+  if(errors.length){
+    process.exit(1);
+  }else{
+    process.exit(0);
+  }
   //console.log(JSON.stringify(ast, null, 2));
 }
 
