@@ -27,7 +27,7 @@ function validateSchema(schema, parent){
   var properties;
   var items;
   var line;
-
+  var isRef = false;
   keys.forEach(function(key){
     line = key.substring(key.lastIndexOf("#"));
     var keyNoLine = key.substring(0, key.lastIndexOf("#"));
@@ -49,16 +49,24 @@ function validateSchema(schema, parent){
       if(keyNoLine === "items"){
         items = schema[key];
       }
+
+      if(keyNoLine === "$ref"){
+        isRef = true;
+      }
     }
   });
 
   if(validTypes.indexOf(type) > -1){
     if(type === "object"){
-      var propertyKeys = Object.keys(properties);
-      propertyKeys.forEach(function(key){
-        var keyNoLine = key.substring(0, key.lastIndexOf("#"));
-        errors = errors.concat(validateSchema(properties[key], parent+"."+keyNoLine));
-      });
+      if(!properties && !isRef){
+        errors.push(parent+" claims type is object but has no property `properties`");
+      }else if(!isRef){
+        var propertyKeys = Object.keys(properties);
+        propertyKeys.forEach(function(key){
+          var keyNoLine = key.substring(0, key.lastIndexOf("#"));
+          errors = errors.concat(validateSchema(properties[key], parent+"."+keyNoLine));
+        });
+      }
     }
 
     else if(type === "array"){
