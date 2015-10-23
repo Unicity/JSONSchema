@@ -22,4 +22,4 @@ Validates a given schema
 
 usage:
 
-`node validator.js <schema to validate>`
+`node validator.js <schema file to validate>`
