@@ -12,6 +12,8 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
   }
   if (typeof obj === 'object' && !Array.isArray(obj) && !isNumeric(obj) && obj !== null) {
     keys = Object.keys(obj);
+    keys = keys.sort();
+    console.log(keys);
     finalSchema = {
       type: "object",
       properties:{}
@@ -35,7 +37,7 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
     }
     else{
       finalSchema = {
-        type: "float"
+        type: "number"
       }
     }
   }
