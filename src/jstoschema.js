@@ -4,9 +4,12 @@ function isNumeric(number){
   return (typeof number === 'number') && !isNaN(parseFloat(number)) && isFinite(number);
 }
 
-module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
+module.exports = function javascriptObjectToJSONSchemaObject (obj, title, options) {
   var finalSchema = {};
   var keys;
+
+  options = options || {};
+  
   if(title){
     finalSchema.title = title;
   }
@@ -19,13 +22,13 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
     }
     
     keys.forEach(function(key){
-      finalSchema.properties[key] = javascriptObjectToJSONSchemaObject(obj[key]);
+      finalSchema.properties[key] = javascriptObjectToJSONSchemaObject(obj[key], null, options);
     })
   }
   else if (Array.isArray(obj)) {
     finalSchema = {
       type: "array",
-      items: [javascriptObjectToJSONSchemaObject(obj[0])]
+      items: [javascriptObjectToJSONSchemaObject(obj[0], null, options)]
     }
   }
   else if (isNumeric(obj)) {
@@ -41,13 +44,24 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title) {
     }
   }
   else if(obj === null){
+    if(options.nullToString){
+      finalSchema = {
+        type: "string"
+      }
+    }else{
+      finalSchema = {
+        type: "null"
+      }
+    }
+  }
+  else if(typeof obj === "boolean"){
     finalSchema = {
-      type: "string"
+      type: "boolean"
     }
   }
   else {
     finalSchema = {
-      type: typeof obj
+      type: "string"
     }
     
   }

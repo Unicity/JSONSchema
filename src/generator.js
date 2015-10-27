@@ -2,11 +2,15 @@
 //
 var fs = require("fs");
 var javascriptObjectToJSONSchema = require("./jstoschema");
+var yargs = require("yargs");
 
-
+var argv = yargs.boolean("nullToString").argv;
 
 function main () {
   //Get the input file from the command line string
+
+
+
   var inputFileName = process.argv[2];
   var outputFileName = process.argv[3];
 
@@ -14,7 +18,12 @@ function main () {
   var inputJSON;
 
   var finalSchema;
-  
+  var options = {};
+
+  if(argv.nullString){
+    options.nullToString = true;
+  }
+
   //Get the json from standard input if no filename is given
   if(inputFileName){
     inputFile = fs.readFileSync(inputFileName);
