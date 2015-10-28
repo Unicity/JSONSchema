@@ -13,12 +13,13 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title, option
   if(title){
     finalSchema.title = title;
   }
+
   if (typeof obj === 'object' && !Array.isArray(obj) && !isNumeric(obj) && obj !== null) {
     keys = Object.keys(obj);
     keys = keys.sort();
     finalSchema = {
-      type: "object",
-      properties:{}
+      properties:{},
+      type: "object"
     }
     
     keys.forEach(function(key){
@@ -27,8 +28,8 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title, option
   }
   else if (Array.isArray(obj)) {
     finalSchema = {
-      type: "array",
-      items: [javascriptObjectToJSONSchemaObject(obj[0], null, options)]
+      items: [javascriptObjectToJSONSchemaObject(obj[0], null, options)],
+      type: "array"
     }
   }
   else if (isNumeric(obj)) {
@@ -65,6 +66,12 @@ module.exports = function javascriptObjectToJSONSchemaObject (obj, title, option
     }
     
   }
-  
-  return finalSchema;
+  //Sort the keys before outputting
+  var schemaKeys = Object.keys(finalSchema);
+  var result = {};
+  schemaKeys.sort();
+  schemaKeys.forEach(function(key){
+    result[key] = finalSchema[key];
+  })
+  return result;;
 }
