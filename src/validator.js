@@ -280,6 +280,7 @@ function ASTToJSONWithLineNumbers (ast){
 }
 
 function main () {
+  console.log(process.argv)
   var schema = fs.readFileSync(process.argv[2]).toString("utf8");
    var tokenizer = {
     index: 0,
